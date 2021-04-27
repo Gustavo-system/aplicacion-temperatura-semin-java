@@ -2,6 +2,7 @@ package com.example.temperaturasemin;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +11,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.hp.bluetoothjhr.BluetoothJhr;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 public class VistaTemperatura extends AppCompatActivity {
 
@@ -49,6 +55,7 @@ public class VistaTemperatura extends AppCompatActivity {
                                 String dato = bluetoothJhr2.Rx();
                                 data.setText(dato);
                                 bluetoothJhr2.ResetearRx();
+                                guardar();
                             }
                         }
                     });
@@ -56,6 +63,25 @@ public class VistaTemperatura extends AppCompatActivity {
             }
         }).start();
 
+        String[] archivos = fileList();
+        if(Validar(archivos, "temperaturas.txt")){
+            String texto = "";
+            try{
+                InputStreamReader archivo = new InputStreamReader(openFileInput("temperaturas.txt"));
+                BufferedReader br = new BufferedReader(archivo);
+                String linea = br.readLine();
+
+                while(linea != null){
+                    texto = texto + linea + "\n";
+                    linea = br.readLine();
+                }
+                br.close();
+                archivo.close();
+
+            }catch (IOException e){
+                Toast.makeText(VistaTemperatura.this, "error de lectura...", Toast.LENGTH_LONG).show();
+            }
+        }
 
     }
 
@@ -72,4 +98,26 @@ public class VistaTemperatura extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    private boolean Validar(String[] archivos, String buscarArchivo){
+        for (int f=0; f<archivos.length; f++){
+            if(buscarArchivo.equals(archivos[f])){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void guardar(){
+        try {
+            OutputStreamWriter archivo = new OutputStreamWriter(openFileOutput("temperaturas.txt", Activity.MODE_PRIVATE));
+            archivo.write(data.getText().toString());
+            archivo.flush();
+            archivo.close();
+        }catch (IOException e){
+            Toast.makeText(VistaTemperatura.this, "error de escritura...", Toast.LENGTH_LONG).show();
+        }
+        finish();
+    }
+
 }
